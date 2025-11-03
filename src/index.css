@@ -17,3 +17,7 @@
 *{
   font-family: "Inter", sans-serif;
 }
+
+.bg-gradient{
+  @apply bg-linear-to-br from-[#632EE3] to-[#9F62F2];
+}

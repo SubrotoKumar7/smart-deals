@@ -1,12 +1,34 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, NavLink } from 'react-router';
+import { AuthContext } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
+
+    const {user, logOut} = useContext(AuthContext);
+
     const links = <>
     <li><NavLink to={'/'}>Home</NavLink></li>
     <li><NavLink to={'/all-products'}>All Products</NavLink></li>
-    <li><NavLink to={'/login'}>Login</NavLink></li>
+    {
+        user &&
+        <>
+        <li><NavLink to={'/my-products'}>My Products</NavLink></li>
+        <li><NavLink to={'/my-bids'}>My Bids</NavLink></li>
+        <li><NavLink to={'/create-products'}>Create Products</NavLink></li>
+        </>
+    }
     </>;
+
+    const handleLogout = () => {
+        logOut()
+        .then(()=> {
+            toast.success('Logout successful');
+        })
+        .catch(err => {
+            toast.error(err.message);
+        })
+    }
 
     return (
         <div className='bg-base-100 shadow-sm'>
@@ -30,7 +52,32 @@ const Navbar = () => {
                     </ul>
                 </div>
                 <div className="navbar-end">
-                    <a className="btn">Button</a>
+                    {
+                        user ?
+                        <div className='flex gap-2'>
+                            <div className="dropdown dropdown-end">
+                                <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+                                    <div className="w-10 rounded-full">
+                                    <img
+                                        alt="Tailwind CSS Navbar component"
+                                        src={user?.photoURL} />
+                                    </div>
+                                </div>
+                                <ul
+                                    tabIndex="-1"
+                                    className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow space-y-2">
+                                    <p className='text-center font-bold'>{user?.displayName}</p>
+                                    <li>
+                                    </li>
+                                    <li>{user?.email}</li>
+                                    <button onClick={handleLogout} className="btn bg-gradient text-white font-bold">Logout</button>
+                                </ul>
+                            </div>
+                            <button onClick={handleLogout} className="btn bg-gradient text-white font-bold">Logout</button>
+                        </div>
+                        :
+                        <Link to={'/login'} className="btn">Login</Link>
+                    }
                 </div>
             </div>
         </div>
