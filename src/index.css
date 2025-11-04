@@ -12,6 +12,7 @@
   default: true;
   --color-primary: blue;
   --color-secondary: teal;
+  --color-base-content: #001931;
 }
 
 *{
@@ -20,4 +21,12 @@
 
 .bg-gradient{
   @apply bg-linear-to-br from-[#632EE3] to-[#9F62F2];
+}
+
+.bg-gradient:hover{
+  @apply opacity-90;
+}
+
+.text-gradient{
+  @apply bg-linear-to-br from-[#632EE3] to-[#9F62F2] text-transparent bg-clip-text;
 }
