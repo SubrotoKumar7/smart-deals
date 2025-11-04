@@ -52,13 +52,35 @@ const Register = () => {
         }
 
         createUser(email, password)
-        .then(()=> {
+        .then((res)=> {
             updateUser(userInfo)
             .then(()=> {
                 setError('');
                 navigate('/');
                 toast.success('Successfully Authenticate');
                 e.target.reset();
+
+                const newUser = {
+                    name: res.user.displayName,
+                    email: res.user.email,
+                    image: res.user.photoURL
+                }
+
+                // save user data to database
+                fetch('http://localhost:3000/users', {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    body: JSON.stringify(newUser)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log('after user save', data);
+                })
+                .catch(err=> {
+                    console.log(err.message);
+                })
             })
             .catch(err => {
                 toast.error(err.message);    
@@ -73,8 +95,32 @@ const Register = () => {
         e.preventDefault();
 
         logInWithGoogle()
-        .then(()=> {
+        .then((res)=> {
             toast.success('Successfully Authenticate');
+            navigate('/');
+
+            const newUser = {
+                name: res.user.displayName,
+                email: res.user.email,
+                image: res.user.photoURL
+            }
+
+            // save user data to database
+            fetch('http://localhost:3000/users', {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify(newUser)
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('after user save', data);
+            })
+            .catch(err=> {
+                console.log(err.message);
+            })
+
         })
         .catch(err => {
             toast.error(err.message);
