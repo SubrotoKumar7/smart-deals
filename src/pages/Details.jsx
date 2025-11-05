@@ -1,18 +1,34 @@
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { Link, useLoaderData } from 'react-router';
 import { AuthContext } from '../context/AuthContext';
+import Swal from 'sweetalert2';
 
 const Details = () => {
 
     const modalRef = useRef();
 
+    const [bids, setBids] = useState([]);
+
     const { user } = useContext(AuthContext);
 
     const {title, price_min, price_max, email, category, created_at, image, status, location, seller_image, seller_name, condition, usage, description, seller_contact, _id} = useLoaderData();
+
+    useEffect(()=>{
+        fetch(`http://localhost:3000/products/bids/${_id}`)
+        .then(res=> res.json())
+        .then(data=> {
+            console.log('bids data', data);
+            setBids(data);
+        })
+    }, [_id]);
     
     const handleModal = () => {
         modalRef.current.showModal();
+    }
+
+    const handleClose = () => {
+        modalRef.current.close();
     }
 
     const handleSubmitBid = e => {
@@ -25,7 +41,7 @@ const Details = () => {
         const contact = e.target.contact.value;
 
 
-        const newBids = {
+        const newBid = {
             product: _id,
             buyer_image: image,
             buyer_name: name,
@@ -41,12 +57,26 @@ const Details = () => {
             headers: {
                 'content-type': 'application/json'
             },
-            body: JSON.stringify(newBids)
+            body: JSON.stringify(newBid)
         })
         .then(res=> res.json())
         .then(data => {
-            e.target.reset();
-            modalRef.current.close();
+            if(data.insertedId){
+                e.target.reset();
+                modalRef.current.close();
+                Swal.fire({
+                position: "top",
+                icon: "success",
+                title: "Your bids has been placed",
+                showConfirmButton: false,
+                timer: 1500
+                });
+                
+                newBid._id = data.insertedId;
+                const newBids = [...bids, newBid];
+                newBids.sort((a,b)=> b.bid_price - a.bid_price);
+                setBids(newBids);
+            }
             console.log('after post bids', data);
         })
 
@@ -108,7 +138,7 @@ const Details = () => {
                     <div className="modal-box">
                         <h3 className="font-bold text-lg">Give Seller Your Offered Price!</h3>
                         <div className="modal-action">
-                            <form method="dialog" onSubmit={handleSubmitBid}>
+                            <form onSubmit={handleSubmitBid}>
                                 <fieldset className="fieldset">
                                     <div className='flex gap-3'>
                                         <div>
@@ -127,7 +157,7 @@ const Details = () => {
                                     <label className="label">Contact info</label>
                                     <input type="text" name='contact' className="input w-full" placeholder="Contact info" />
                                     <div className='flex items-center justify-end gap-3 mt-5'>
-                                        <button onClick={()=> modalRef.current.close()} className="btn">Close</button>
+                                        <button type='button' onClick={handleClose} className="btn">Close</button>
                                         <button type='submit' className="btn bg-gradient text-white">Submit Bid</button>
                                     </div>
                                 </fieldset>
@@ -136,6 +166,61 @@ const Details = () => {
                     </div>
                 </dialog>
             </div>
+            {/* bids area */}
+            {
+                bids.length > 0 &&
+            <div className='mt-10'>
+                <h1 className='text-2xl font-bold'>Bids For This Products: <span className='text-purple-500'>{bids.length}</span></h1>
+
+                <div className='mt-5'>
+                    <div className="overflow-x-auto">
+                        <table className="table">
+                            <thead>
+                            <tr>
+                                <th>
+                                    <label>SL No</label>
+                                </th>
+                                <th>Buyer Name</th>
+                                <th>Email</th>
+                                <th>Bid Price</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    bids.map((bid, i) => 
+                                        <tr key={i}>
+                                            <th>
+                                            <label>{i + 1}</label>
+                                            </th>
+                                            <td>
+                                            <div className="flex items-center gap-3">
+                                                <div className="avatar">
+                                                <div className="mask mask-squircle h-12 w-12">
+                                                    <img
+                                                    src={bid.buyer_image}
+                                                    alt="buyer" />
+                                                </div>
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold">{bid.buyer_name}</div>
+                                                </div>
+                                            </div>
+                                            </td>
+                                            <td>{bid.buyer_email}</td>
+                                            <td>{bid.bid_price}</td>
+                                            <th>
+                                            <button className="btn btn-ghost btn-xs">details</button>
+                                            </th>
+                                        </tr>
+                                    )
+                                }
+                            </tbody>
+                        </table>
+                        </div>
+                </div>
+            </div>
+            }
         </div>
     );
 };
