@@ -8,6 +8,8 @@ import Private from "../private/Private";
 import MyProducts from "../pages/MyProducts";
 import Bids from "../pages/Bids";
 import CreateProducts from "../pages/CreateProducts";
+import Loader from "../components/loader/Loader";
+import Details from "../pages/Details";
 
 const router = createBrowserRouter([
     {
@@ -16,11 +18,15 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                Component: Home
+                Component: Home,
+                loader: ()=> fetch('http://localhost:3000/latest-products'),
+                hydrateFallbackElement: <Loader></Loader>
             },
             {
                 path: 'all-products',
-                Component: AllProducts
+                Component: AllProducts,
+                loader: ()=> fetch('http://localhost:3000/products'),
+                hydrateFallbackElement: <Loader></Loader>
             },
             {
                 path: 'login',
@@ -41,6 +47,11 @@ const router = createBrowserRouter([
             {
                 path: 'create-products',
                 element: <Private><CreateProducts></CreateProducts></Private>
+            },
+            {
+                path: 'product-details/:id',
+                loader: ({params}) => fetch(`http://localhost:3000/products/${params.id}`),
+                element: <Private><Details></Details></Private>,
             }
         ]
     }
